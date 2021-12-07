@@ -102,9 +102,30 @@ async function main() {
     // log the serial number
     console.log(`- Created NFT ${tokenId} with serial: ${mintRx.serials[0].low}`);
 
-    console.log(util.inspect(mintTx));
-    console.log(util.inspect(mintTxSign));
-    console.log(util.inspect(mintTxSubmit));
-    console.log(util.inspect(mintRx));
+    // console.log(util.inspect(mintTx));
+    // console.log(util.inspect(mintTxSign));
+    // console.log(util.inspect(mintTxSubmit));
+    // console.log(util.inspect(mintRx));
+
+    // create the associate transaction and sign with alice key
+    const associateAliceTx = await new TokenAssociateTransaction()
+      .setAccountId(aliceAccountId)
+      .setTokenIds([tokenId])
+      .freezeWith(client)
+      .sign(alicePrivateKey);
+
+    // submit the transaction to the hedera network
+    const associateAliceTxSubmit = await associateAliceTx.execute(client);
+
+    // get the transaction receipt
+    const associateAliceRx = await associateAliceTxSubmit.getReceipt(client);
+
+    // confirm the transaction was successful
+    console.log(`- NFT association with Alice's account: ${associateAliceRx.status}`);
+
+    console.log(util.inspect(associateAliceTx));
+    console.log(util.inspect(associateAliceTxSubmit));
+    console.log(util.inspect(associateAliceRx));
+
   }
 main();
