@@ -1,4 +1,4 @@
-const { Client, PrivateKey, AccountCreateTransaction, AccountBalanceQuery, Hbar, TransferTransaction, TopicCreateTransaction } = require("@hashgraph/sdk");
+const { Client, PrivateKey, AccountCreateTransaction, AccountBalanceQuery, Hbar, TransferTransaction, TopicCreateTransaction, TopicMessageQuery } = require("@hashgraph/sdk");
 const { resolve } = require("path");
 require("dotenv").config();
 
@@ -34,5 +34,16 @@ async function main() {
 
   // wait 5 seconds between consensus topic creation and subscription
   await new Promise(resolve => setTimeout(resolve, 5000));
+
+  // create the query to subscribe to a topic
+  const topicMessageQuery = new TopicMessageQuery()
+    .setTopicId(topicId)
+    .subscribe(client, null, (message) => {
+      let messageAsString = Buffer.from(message.contents, "utf8").toString();
+      console.log(`${message.consensusTimestamp.toDate()} Received: ${messageAsString}`);
+      console.log(util.inspect(message));
+    });
+
+  console.log(util.inspect(topicMessageQuery));
 }
 main();
