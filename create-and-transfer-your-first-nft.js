@@ -23,13 +23,6 @@ const operatorKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
 
 const client = Client.forPreviewnet().setOperator(operatorId, operatorKey);
 
-
-// const treasuryId = AccountId.fromString(process.env.TREASURY_ID);
-// const treasuryKey = PrivateKey.fromString(process.env.TREASURY_PVKEY);
-// const aliceId = AccountId.fromString(process.env.ALICE_ID);
-// const aliceKey = PrivateKey.fromString(process.env.ALICE_PVKEY);
-
-
 const supplyKey = PrivateKey.generate();
 
 async function main() {
@@ -83,9 +76,35 @@ async function main() {
     // log the token ID
     console.log(`- Created NFT with Token ID: ${tokenId}`);
 
-    console.log(util.inspect(nftCreate));
-    console.log(util.inspect(nftCreateTxSign));
-    console.log(util.inspect(nftCreateSubmit));
-    console.log(util.inspect(nftCreateRx));
+    // console.log(util.inspect(nftCreate));
+    // console.log(util.inspect(nftCreateTxSign));
+    // console.log(util.inspect(nftCreateSubmit));
+    // console.log(util.inspect(nftCreateRx));
+
+    // ipfs content identifier for which we will create a nft
+    CID = ["QmTzWcVfk88JRqjTpVwHzBeULRTNzHY7mnBSG42CpwHmPa"];
+
+    // mint new nft
+    const mintTx = await new TokenMintTransaction()
+      .setTokenId(tokenId)
+      .setMetadata([Buffer.from(CID)])
+      .freezeWith(client);
+
+    // sign the transaction with the supply key
+    const mintTxSign = await mintTx.sign(supplyKey);
+
+    // submit the transaction to the hedera network
+    const mintTxSubmit = await mintTxSign.execute(client);
+
+    // get the transaction receipt
+    const mintRx = await mintTxSubmit.getReceipt(client);
+
+    // log the serial number
+    console.log(`- Created NFT ${tokenId} with serial: ${mintRx.serials[0].low}`);
+
+    console.log(util.inspect(mintTx));
+    console.log(util.inspect(mintTxSign));
+    console.log(util.inspect(mintTxSubmit));
+    console.log(util.inspect(mintRx));
   }
 main();
