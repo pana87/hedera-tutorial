@@ -1,13 +1,13 @@
-const { Client, TopicMessageSubmitTransaction, PrivateKey, AccountCreateTransaction, AccountBalanceQuery, Hbar, TransferTransaction, TopicCreateTransaction, TopicMessageQuery } = require("@hashgraph/sdk");
-const { resolve } = require("path");
+const { Client, TopicMessageSubmitTransaction, PrivateKey, AccountId, TopicCreateTransaction, TopicMessageQuery } = require("@hashgraph/sdk");
+
 require("dotenv").config();
 
 const util = require("util");
 
 async function main() {
   // grab hedera keys from .env
-  const myAccountId = process.env.MY_ACCOUNT_ID;
-  const myPrivateKey = process.env.MY_PRIVATE_KEY;
+  const myAccountId = AccountId.fromString(process.env.MY_ACCOUNT_ID);
+  const myPrivateKey = PrivateKey.fromString(process.env.MY_PRIVATE_KEY);
 
   // if we are not able to grab it, we should throw an error
   if (myAccountId == null || myPrivateKey == null) {
