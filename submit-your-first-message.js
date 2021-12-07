@@ -1,4 +1,4 @@
-const { Client, PrivateKey, AccountCreateTransaction, AccountBalanceQuery, Hbar, TransferTransaction, TopicCreateTransaction, TopicMessageQuery } = require("@hashgraph/sdk");
+const { Client, TopicMessageSubmitTransaction, PrivateKey, AccountCreateTransaction, AccountBalanceQuery, Hbar, TransferTransaction, TopicCreateTransaction, TopicMessageQuery } = require("@hashgraph/sdk");
 const { resolve } = require("path");
 require("dotenv").config();
 
@@ -45,5 +45,21 @@ async function main() {
     });
 
   console.log(util.inspect(topicMessageQuery));
+
+  // send one message
+  const submitMessage = await new TopicMessageSubmitTransaction({
+    topicId: topicId,
+    message: "Hello, HCS!",
+  }).execute(client);
+  console.log(util.inspect(submitMessage));
+
+  // get the receipt of the transaction
+  const getReceipt = await submitMessage.getReceipt(client);
+  console.log(util.inspect(getReceipt));
+
+  // get the status of the transaction
+  const transactionStatus = getReceipt.status
+  console.log(`The message transaction status ${transactionStatus}`);
+
 }
 main();
