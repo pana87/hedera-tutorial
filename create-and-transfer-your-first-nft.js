@@ -123,9 +123,57 @@ async function main() {
     // confirm the transaction was successful
     console.log(`- NFT association with Alice's account: ${associateAliceRx.status}`);
 
-    console.log(util.inspect(associateAliceTx));
-    console.log(util.inspect(associateAliceTxSubmit));
-    console.log(util.inspect(associateAliceRx));
+    // console.log(util.inspect(associateAliceTx));
+    // console.log(util.inspect(associateAliceTxSubmit));
+    // console.log(util.inspect(associateAliceRx));
+
+    // check the balance before the transfer for the treasury account
+    var balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(treasuryAccountId)
+      .execute(client);
+    // console.log(util.inspect(balanceCheckTx));
+    console.log(`- Treasury balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} NFTs of ID ${tokenId}`);
+
+    // check the balance before the transfer for alices account
+    var balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(aliceAccountId)
+      .execute(client);
+    // console.log(util.inspect(balanceCheckTx));
+    console.log(`- Alice's balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} NFTs of ID ${tokenId}`);
+
+    // transfer the nft from treasury to alice
+    // sign with the treasury key to authorize the transfer
+    const tokenTransferTx = await new TransferTransaction()
+      .addNftTransfer(tokenId, 1, treasuryAccountId, aliceAccountId)
+      .freezeWith(client)
+      .sign(treasuryPrivateKey);
+
+    // submit to hedera network
+    const tokenTransferTxSubmit = await tokenTransferTx.execute(client);
+
+    // get the receipt
+    const tokenTransferRx = await tokenTransferTxSubmit.getReceipt(client);
+
+    // console.log(util.inspect(tokenTransferTx));
+    // console.log(util.inspect(tokenTransferTxSubmit));
+    // console.log(util.inspect(tokenTransferRx));
+
+    console.log(`- NFT transfer from Treasury to Alice: ${tokenTransferRx.status}`);
+
+
+    // check the balance after the transfer for the treasury account
+    var balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(treasuryAccountId)
+      .execute(client);
+    // console.log(util.inspect(balanceCheckTx));
+    console.log(`- Treasury balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} NFTs of ID ${tokenId}`);
+
+    // check the balance after the transfer for alices account
+    var balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(aliceAccountId)
+      .execute(client);
+    // console.log(util.inspect(balanceCheckTx));
+    console.log(`- Alice's balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} NFTs of ID ${tokenId}`);
 
   }
 main();
