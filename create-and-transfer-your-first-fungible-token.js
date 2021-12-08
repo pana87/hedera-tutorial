@@ -1,5 +1,5 @@
 console.clear();
-const { TokenType, TokenSupplyType, TokenCreateTransaction, Client, PrivateKey, AccountId, AccountCreateTransaction } = require('@hashgraph/sdk');
+const { TokenAssociateTransaction, TokenType, TokenSupplyType, TokenCreateTransaction, Client, PrivateKey, AccountId, AccountCreateTransaction } = require('@hashgraph/sdk');
 require('dotenv').config();
 const util = require('util');
 
@@ -56,11 +56,30 @@ async function main() {
   // log the token id to the console
   console.log(`- Created token with ID: ${tokenId}`);
 
-  console.log(util.inspect(tokenCreateTx));
-  console.log(util.inspect(tokenCreateSign));
-  console.log(util.inspect(tokenCreateSubmit));
-  console.log(util.inspect(tokenCreateRx));
+  // console.log(util.inspect(tokenCreateTx));
+  // console.log(util.inspect(tokenCreateSign));
+  // console.log(util.inspect(tokenCreateSubmit));
+  // console.log(util.inspect(tokenCreateRx));
 
+  // token association with alice account
+  let associationAliceTx = await new TokenAssociateTransaction()
+    .setAccountId(aliceAccountId)
+    .setTokenIds([tokenId])
+    .freezeWith(client)
+    .sign(alicePrivateKey);
+
+  // submit the transaction
+  let associationAliceTxSubmit = await associationAliceTx.execute(client);
+
+  // get the receipt of the transaction
+  let associationAliceRx = await associationAliceTxSubmit.getReceipt(client);
+
+  // log the transaction status
+  console.log(`- Token association with Alice's account: ${associationAliceRx.status}`);
+
+  console.log(util.inspect(associationAliceTx));
+  console.log(util.inspect(associationAliceTxSubmit));
+  console.log(util.inspect(associationAliceRx));
 
 
 }
