@@ -1,5 +1,5 @@
 console.clear();
-const { TokenAssociateTransaction, TokenType, TokenSupplyType, TokenCreateTransaction, Client, PrivateKey, AccountId, AccountCreateTransaction } = require('@hashgraph/sdk');
+const { TransferTransaction, AccountBalanceQuery, TokenAssociateTransaction, TokenType, TokenSupplyType, TokenCreateTransaction, Client, PrivateKey, AccountId, AccountCreateTransaction } = require('@hashgraph/sdk');
 require('dotenv').config();
 const util = require('util');
 
@@ -77,9 +77,44 @@ async function main() {
   // log the transaction status
   console.log(`- Token association with Alice's account: ${associationAliceRx.status}`);
 
-  console.log(util.inspect(associationAliceTx));
-  console.log(util.inspect(associationAliceTxSubmit));
-  console.log(util.inspect(associationAliceRx));
+  // console.log(util.inspect(associationAliceTx));
+  // console.log(util.inspect(associationAliceTxSubmit));
+  // console.log(util.inspect(associationAliceRx));
+
+  // balance check
+  var balanceCheckTx = await new AccountBalanceQuery().setAccountId(treasuryAccountId).execute(client);
+  console.log(`- Treasury balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} units of token ID ${tokenId}`);
+
+  var balanceCheckTx = await new AccountBalanceQuery().setAccountId(aliceAccountId).execute(client);
+  console.log(`- Alice balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} units of token ID ${tokenId}`);
+
+  // transfer stablecoin from treasury to alice
+  let tokenTransferTx = await new TransferTransaction()
+    .addTokenTransfer(tokenId, treasuryAccountId, -2500)
+    .addTokenTransfer(tokenId, aliceAccountId, 2500)
+    .freezeWith(client)
+    .sign(treasuryPrivateKey);
+
+  // submit the transaction
+  let tokenTransferTxSubmit = await tokenTransferTx.execute(client);
+
+  // get the receipt of the transaction
+  let tokenTransferRx = await tokenTransferTxSubmit.getReceipt(client);
+
+  // log the transaction status
+  console.log(`- Stablecoint transfer from Treasury to Alice: ${tokenTransferRx.status}`);
+
+
+  // balance check
+  var balanceCheckTx = await new AccountBalanceQuery().setAccountId(treasuryAccountId).execute(client);
+  console.log(`- Treasury balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} units of token ID ${tokenId}`);
+
+  var balanceCheckTx = await new AccountBalanceQuery().setAccountId(aliceAccountId).execute(client);
+  console.log(`- Alice balance: ${balanceCheckTx.tokens._map.get(tokenId.toString())} units of token ID ${tokenId}`);
+
+  console.log(util.inspect(tokenTransferTx));
+  console.log(util.inspect(tokenTransferTxSubmit));
+  console.log(util.inspect(tokenTransferRx));
 
 
 }
