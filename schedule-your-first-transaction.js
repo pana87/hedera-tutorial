@@ -1,5 +1,5 @@
 console.clear();
-const { TransferTransaction, AccountBalanceQuery, Hbar, AccountCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
+const { ScheduleCreateTransaction, TransferTransaction, AccountBalanceQuery, Hbar, AccountCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
 require('dotenv').config();
 const util = require('util');
 
@@ -53,6 +53,24 @@ async function main() {
     .addHbarTransfer(recipientAccountId, Hbar.fromTinybars(1));
   // console.log(util.inspect(transaction));
 
+  // schedule a transaction
+  const scheduleTransaction = await new ScheduleCreateTransaction()
+    .setScheduledTransaction(transaction)
+    .execute(client);
+
+  // get the receipt
+  const receipt = await scheduleTransaction.getReceipt(client);
+
+  // get the schedule id
+  const scheduleId = receipt.scheduleId;
+  console.log(`- The schedule ID is: ${scheduleId}`);
+
+  // get the schedule transaction id
+  const scheduleTxId = receipt.scheduledTransactionId;
+  console.log(`- The transaction schedule ID is: ${scheduleTxId}`);
+
+  // console.log(util.inspect(scheduleTransaction));
+  // console.log(util.inspect(receipt));
 }
 
 main();
