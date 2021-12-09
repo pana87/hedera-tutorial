@@ -1,5 +1,5 @@
 console.clear();
-const { ScheduleCreateTransaction, TransferTransaction, AccountBalanceQuery, Hbar, AccountCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
+const { ScheduleInfoQuery, ScheduleSignTransaction, ScheduleCreateTransaction, TransferTransaction, AccountBalanceQuery, Hbar, AccountCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
 require('dotenv').config();
 const util = require('util');
 
@@ -71,6 +71,27 @@ async function main() {
 
   // console.log(util.inspect(scheduleTransaction));
   // console.log(util.inspect(receipt));
+
+  // submit the first signature
+  const signature1 = await (await new ScheduleSignTransaction()
+    .setScheduleId(scheduleId)
+    .freezeWith(client)
+    .sign(senderAccountPrivateKey))
+    .execute(client);
+
+  // verify the transaction was successful and submit a schedule info request
+  const receipt1 = await signature1.getReceipt(client);
+  console.log(`- The transaction status is: ${receipt1.status.toString()}`);
+
+  const query1 = await new ScheduleInfoQuery()
+    .setScheduleId(scheduleId)
+    .execute(client);
+
+  // confirm the signature was added to the schedule
+  console.log(query1);
+
+
+  // console.log(util.inspect(signature1));
 }
 
 main();
