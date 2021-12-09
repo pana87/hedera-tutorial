@@ -78,6 +78,7 @@ async function main() {
     .freezeWith(client)
     .sign(senderAccountPrivateKey))
     .execute(client);
+  // console.log(util.inspect(signature1));
 
   // verify the transaction was successful and submit a schedule info request
   const receipt1 = await signature1.getReceipt(client);
@@ -90,8 +91,19 @@ async function main() {
   // confirm the signature was added to the schedule
   console.log(query1);
 
+  // submit the second signature
+  const signature2 = await (await new ScheduleSignTransaction()
+    .setScheduleId(scheduleId)
+    .freezeWith(client)
+    .sign(recipientAccountPrivateKey))
+    .execute(client);
+  // console.log(util.inspect(signature2));
 
-  // console.log(util.inspect(signature1));
+  // verify the transaction was successful
+  const receipt2 = await signature2.getReceipt(client);
+  console.log(`- The transaction status ${receipt2.status.toString()}`);
+
+
 }
 
 main();
