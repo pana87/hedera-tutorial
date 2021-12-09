@@ -103,6 +103,12 @@ async function main() {
   const receipt2 = await signature2.getReceipt(client);
   console.log(`- The transaction status ${receipt2.status.toString()}`);
 
+  // get the schedule info
+  const query2 = await new ScheduleInfoQuery()
+    .setScheduleId(scheduleId)
+    .execute(client);
+
+  console.log(query2);
 
 }
 
