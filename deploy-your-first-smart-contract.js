@@ -1,6 +1,6 @@
 console.clear();
 const util = require('util');
-const { FileCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
+const { ContractFunctionParameters, ContractCreateTransaction, FileCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
 require('dotenv').config();
 
 // import the compiled contract from the HelloHedera.json file
@@ -36,8 +36,27 @@ async function main() {
   // log the file ID
   console.log(`- The smart contract byte code file ID is ${bytecodeFileId}`);
 
+  // instantiate the contract instance
+  const contractTx = await new ContractCreateTransaction()
+    // set the file ID of the hedera file storing the bytecode
+    .setBytecodeFileId(bytecodeFileId)
+    // set the gas to instantiate the contract
+    .setGas(100000)
+    // provide the contstructor parameters for the contract
+    .setConstructorParameters(new ContractFunctionParameters().addString('Hello from Hedera!'));
+  // console.log(util.inspect(contractTx));
 
+  // submit the transaction to the hedera network
+  const contractResponse = await contractTx.execute(client);
 
+  // get the receipt of the file create transaction
+  const contractReceipt = contractResponse.getReceipt(client);
+
+  // get the smart contract ID
+  const newContractID = (await contractReceipt).contractId;
+
+  // log the smart contract ID
+  console.log(`- The smart contract ID is ${newContractID}`);
 
 }
 
