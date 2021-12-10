@@ -1,6 +1,6 @@
 console.clear();
 const util = require('util');
-const { Hbar, ContractCallQuery, ContractFunctionParameters, ContractCreateTransaction, FileCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
+const { ContractExecuteTransaction, Hbar, ContractCallQuery, ContractFunctionParameters, ContractCreateTransaction, FileCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
 require('dotenv').config();
 
 // import the compiled contract from the HelloHedera.json file
@@ -81,6 +81,46 @@ async function main() {
 
   // log the message
   console.log(`- The contract message: ${message}`);
+
+  // create the transaction to update the contract message
+  const contractExecutionTx = await new ContractExecuteTransaction()
+    // set the ID of the contract
+    .setContractId(newContractID)
+    // set the gas for the contract call
+    .setGas(100000)
+    // set the contract function to call
+    .setFunction("set_message", new ContractFunctionParameters().addString("Hello from Hedera again!"));
+
+  // submit the transaction to a hedera network and store the response
+  const submitExecutionTx = await contractExecutionTx.execute(client);
+
+  // get the receipt of the transaction
+  const receipt2 = await submitExecutionTx.getReceipt(client);
+
+  // confirm the transaction was executed successfully
+  console.log(`- The transaction status is ${receipt2.status.toString()}`);
+
+  // query the contract for the contract message
+  const contractCallQuery = new ContractCallQuery()
+    // set the ID of the contract to query
+    .setContractId(newContractID)
+    // set the gas to execute the contract call
+    .setGas(100000)
+    // set the contract function to call
+    .setFunction('get_message')
+    // set the query payment for the node returning the request
+    // this value must cover the cost of the request otherwise will fail
+    .setQueryPayment(new Hbar(10));
+
+  // submit the transaction to a hedera network
+  const contractUpdateResult = await contractCallQuery.execute(client);
+
+  // get the updated message at index 0
+  const message2 = contractUpdateResult.getString(0);
+
+  // log the updated message to the console
+  console.log(`- The updated contract message: ${message2}`);
+
 }
 
 main();
