@@ -1,6 +1,6 @@
 console.clear();
 const util = require('util');
-const { ContractFunctionParameters, ContractCreateTransaction, FileCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
+const { Hbar, ContractCallQuery, ContractFunctionParameters, ContractCreateTransaction, FileCreateTransaction, Client, PrivateKey, AccountId } = require('@hashgraph/sdk');
 require('dotenv').config();
 
 // import the compiled contract from the HelloHedera.json file
@@ -58,6 +58,29 @@ async function main() {
   // log the smart contract ID
   console.log(`- The smart contract ID is ${newContractID}`);
 
+  // calls a function of the smart contract
+  const contractQuery = await new ContractCallQuery()
+    // set the gas for the query
+    .setGas(100000)
+    // set the contract ID to return the request for
+    .setContractId(newContractID)
+    // set the contract function call
+    .setFunction('get_message')
+    // set the query payment for the node returning the request
+    // this value must cover the cost of the request otherwise will fail
+    .setQueryPayment(new Hbar(2));
+  // console.log(util.inspect(contractQuery));
+
+  // submit to a hedera network
+  const getMessage = await contractQuery.execute(client);
+  // console.log(util.inspect(getMessage));
+
+  // get a string from the result at index 0
+  const message = getMessage.getString(0);
+  // console.log(util.inspect(message));
+
+  // log the message
+  console.log(`- The contract message: ${message}`);
 }
 
 main();
